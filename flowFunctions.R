@@ -15,12 +15,12 @@
 # Maybe flowStats
 
 # arcsinh transformation -> arcsinhTransformed flowSet
-flowVS::estParamFlowVS(fs, channels)
-flowVS::transFlowVS(fs, channels, cofactors)
+#flowVS::estParamFlowVS(fs, channels)
+#flowVS::transFlowVS(fs, channels, cofactors)
 
   # normalization01 for flowSom -> flowSOM flowSet
   # matrixStats
-  normC = function(expr, colsToUse = NULL){
+normC = function(expr, colsToUse = NULL){
     
     if(is.null(colsToUse)){
       colsToUse = 1:ncol(expr)
@@ -39,11 +39,11 @@ flowVS::transFlowVS(fs, channels, cofactors)
     return(expr)
   }
   # normTsne for Tsne and UMAP -> vis flowSet
-  subsampleV = function(expr, balance = "conditionOrSampleID"){
+subsampleV = function(expr, balance = "conditionOrSampleID"){
     return(subExpr)
   } 
   
-  normV = function(expr, colsToUse = NULL){
+normV = function(expr, colsToUse = NULL){
     # Adjust data to start from (approximately) 0
     normV_expr = expr
     q = apply(expr[,colsToUse], 2, function(x) quantile(x, 0.01, names = F))
@@ -65,7 +65,7 @@ flowVS::transFlowVS(fs, channels, cofactors)
   }
 
 # (flowStats)
-  warpExpression = function(expr,sampleIDs, colsToUse = NULL, out = "expr"){
+warpExpression = function(expr,sampleIDs, colsToUse = NULL, out = "expr"){
     if(length(sampleIDs) != nrow(expr)){
       stop("sample_id vector not equal length as expression matrix")
     }
