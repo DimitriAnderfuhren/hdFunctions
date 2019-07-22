@@ -259,4 +259,3 @@ interactiveScatterPlot = function(dataFrame, markerY, markerX,
 }
   
   
-}
