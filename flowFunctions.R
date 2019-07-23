@@ -83,7 +83,7 @@ warpExpression = function(expr,sampleIDs, colsToUse = NULL, out = "expr"){
       expr_warped = flowCore::fsApply(ffs_warped,exprs)
       return(expr_warped)
     }
-  }
+}
 
 # save transformed experiment
 
