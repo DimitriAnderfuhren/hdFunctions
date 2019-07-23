@@ -72,7 +72,7 @@ warpExpression = function(expr,sampleIDs, colsToUse = NULL, out = "expr"){
     if(is.null(colsToUse)){
       colsToUse = colnames(expr)
     }
-    s = split.data.frame(expr,fname)
+    s = split.data.frame(expr,sampleIDs)
     ffs = flowCore::flowSet(lapply(s,createFlowFrame))
     ffs_warped = flowStats::warpSet(ffs, stains = colsToUse)
     
@@ -123,7 +123,34 @@ extractClusterPerSample = function(expr, clusterMergings = NULL, clusterName = N
   
   return(cluster_list)
 }
-  
+
+checkColNames = function(expr, colsToCheck){
+  colsThereBool = colsToCheck %in% colnames(expr)
+  if(all(colsThereBool)){
+    return(T)
+  }else{
+    print("Columns not found in dataframe:")
+    print(colsToCheck[!colsThereBool])
+    return(F)
+  }
+}
+
+createColors = function(){
+  info = brewer.pal.info
+  set_names = rownames(info[info$category == "qual",])
+  all_colors = c()
+  for(i in 1:length(set_names)){
+    all_colors = c(all_colors,brewer.pal(8,set_names[i]) )
+  }
+  return(all_colors)
+}
+
+factorsToColor = function(vector, colors){
+  n = nlevels(as.factor(vector))
+  color = colors[1:n]
+  names(color) = levels(as.factor(vector))
+  return(color)
+}
   
   
 ##### Visualization
