@@ -284,5 +284,30 @@ interactiveScatterPlot = function(dataFrame, markerY, markerX,
          col = plotColor)
   }
 }
+
+
+markerDensity = function(expr, markerName = NULL){
+  
+  if(is.null(markerName)){
+    stop("must provide markername")
+  }
+  d = density(as.numeric(expr[,markerName]))
+  
+  return(d)
+}
+
+plotMarkerDensity = function(expr,sampleIDs = NULL, markerName = NULL){
+  s = split.data.frame(expr,sampleIDs)
+  ds = lapply(s,markerDensity, markerName = markerName)
+  names = names(ds)
+  p = plot_ly(x = ds[[1]]$x,y = ds[[1]]$y, type = "scatter", mode = "line", name = names[i]) %>%
+    layout(title = markerName)
+  for(i in 2:length(ds)){
+    p = add_trace(p,x = ds[[i]]$x, y = ds[[i]]$y, name = names[i])
+  }
+  
+  p
+  
+}
   
   
