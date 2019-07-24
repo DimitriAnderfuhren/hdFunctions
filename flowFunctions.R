@@ -60,7 +60,7 @@ normV = function(expr, colsToUse = NULL){
     
     # Check whether you adjusted the range approximately from 0 to 1
     return(normV_expr)
-  }
+}
 
 # marker alignment
   # Maybe interactive plot with manipulate
