@@ -365,5 +365,15 @@ findFactorCols = function(df){
   fC = names(Filter(is.factor,df))
   return(fC)
 }
+
+removeSamplesByID = function(expr, sampleIDs, IDsToRemove){
+  if(!all(IDsToRemove %in% sampleIDs)){
+    print(IDsToRemove[!IDsToRemove %in% sampleIDs])
+    stop("Not all IDs to rmove found in the sample IDs")
+  }
+  expr_out = expr[!(sampleIDs %in% IDsToRemove),]
+  
+  return(expr_out)
+}
   
   
