@@ -45,6 +45,10 @@ subsampleV = function(expr, balance = "conditionOrSampleID"){
   
 normV = function(expr, colsToUse = NULL){
     # Adjust data to start from (approximately) 0
+    if(is.null(colsToUse)){
+      colsToUse = 1:ncol(expr)
+    }
+  
     normV_expr = expr
     q = apply(expr[,colsToUse], 2, function(x) quantile(x, 0.01, names = F))
     normV_expr[,colsToUse] = sweep(normV_expr[,colsToUse], 2, q)
