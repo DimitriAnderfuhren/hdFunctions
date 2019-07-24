@@ -326,12 +326,38 @@ balancedSubsample = function(expr,sampleIDs, nTot = 1000){
     stop("Not enough cells")
   }
   
-  s = split.data.frame(df,sampleIDs)
+  s = split.data.frame(expr,sampleIDs)
   l = lapply(s,FUN = function(x){x[sample(1:nrow(x),size = nToSample),]})
   
   expr_out = do.call(rbind,l)
   
   return(expr_out)
+}
+
+balancedSubInds = function(expr,sampleIDs, nTot = 1000){
+  
+  all_inds = 1:nrow(expr)
+  
+  
+  sampleIDs = as.factor(sampleIDs)
+  
+  all_levels = levels(sampleIDs)
+  nLevels = length(all_levels)
+  nToSample = as.integer(nTot/nLevels)
+  
+  enoughCells = table(sampleIDs) > nToSample
+  
+  if(!all(enoughCells)){
+    print(names(table(sampleIDs)[!enoughCells]))
+    stop("Not enough cells")
+  }
+  
+  s = split(all_inds,sampleIDs)
+  l = lapply(s,FUN = function(x){x[sample(1:length(x),size = nToSample)]})
+  
+  inds_out = do.call(rbind,l)
+  
+  return(inds_out)
 }
 
 # finds all factor columns
