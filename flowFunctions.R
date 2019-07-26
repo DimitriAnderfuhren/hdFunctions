@@ -1,4 +1,10 @@
 
+
+markerNames = all_markers
+minCofactor = 0
+maxCofactor = 2000
+color1 = "cadetblue"
+color2 = "chocolate"
 # Roadmap
 
 # path of experiment folder
