@@ -1,11 +1,12 @@
 # exampleData
 example = list()
 example$nVars = 12
-example$nObs = 100
+example$nObs = 10000
 example$nSamples = 10
 example$expr = matrix(rnorm(example$nObs*example$nVars),ncol = example$nVars)
 example$MarkerNames = c("CD4", "TIGIT", "IFNg", "CD8", "HLADR", "IL10", "CD56","CD45RA", "IL17", "CCR7", "IL2", "TNFa")
-example$sampleIDs = rep(letters[1:example$nSamples], rep(example$nSamples,example$nObs/example$nSamples))
+example$sampleIDs = rep(letters[1:example$nSamples], rep(example$nObs/example$nSamples,example$nSamples))
+colnames(example$expr) = example$MarkerNames
 
 # Constants
 markerNames = all_markers
@@ -78,7 +79,7 @@ normV = function(expr, colsToUse = NULL){
 
 # marker alignment
   # Maybe interactive plot with manipulate
-  quickDensityPlotly = function(expr){
+quickDensityPlotly = function(expr){
     return(interactivePlot)
   }
 
@@ -133,7 +134,7 @@ extractClusterPerSample = function(expr, clusterMergings = NULL, clusterName = N
   
   frames_list = split(mergedExpr,mergedExpr[["sample_id"]])
   
-  cluster_list = lapply(frames_list,FUN = function(x){x[x[["cluster"]] == clusterName,]})
+  cluster_list = lapply(frames_list,FUN = function(x){x[x[["cluster"]] %in% clusterName,]})
   
   if(matrixOnly == T){
     cluster_list = lapply(cluster_list, FUN = function(x){x[,!colnames(x) %in% c("cluster","sample_id")]})
@@ -397,6 +398,9 @@ removeSamplesByID = function(expr, sampleIDs, IDsToRemove){
 library(Rtsne.multicore)
 
 maketSNE = function(expr,tsne_inds, colsToUse = NULL, dims = 2, perplexity = 120, theta = 0.5, max_iter = 2000, verbose = T, pca = F, check_duplicates=F){
+  if(is.null(colsToUse)){
+    colsToUse = 1:ncol(expr)
+  }
   
   tsne = Rtsne.multicore(expr[tsne_inds,colsToUse], dims = 2, perplexity = 120, theta = 0.5, 
                          max_iter = 2000, verbose = T, pca = F, check_duplicates=F)
@@ -406,10 +410,14 @@ maketSNE = function(expr,tsne_inds, colsToUse = NULL, dims = 2, perplexity = 120
   return(dr)
 }
 
+sub_inds = balancedSubInds(example$expr, example$sampleIDs, nTot = 1000)
+dr = maketSNE(expr = exampleExpr, tsne_inds = sub_inds)
+
 plotReducedDim = function(expr,dr,sampleIDs,tsne_inds,md){
   subExpr = data.frame(expr[tsne_inds,], sample_id = sampleIDs[tsne_inds])
   joinedExpr = merge.data.frame(subExpr,md, by = "sample_id")
-  meltedExpr = melt(joinedExpr)
+  meltedExpr = melt(joinedExpr, variable.name = "antigen", value.name = "expression")
+  
 }
   
   
