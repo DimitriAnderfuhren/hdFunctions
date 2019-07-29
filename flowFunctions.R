@@ -9,7 +9,6 @@ example$sampleIDs = rep(letters[1:example$nSamples], rep(example$nObs/example$nS
 colnames(example$expr) = example$MarkerNames
 
 # Constants
-markerNames = all_markers
 minCofactor = 0
 maxCofactor = 2000
 color1 = "cadetblue"
@@ -129,6 +128,7 @@ createFlowFrame = function(expr, colsToUse = NULL){
 }
 
 extractClusterPerSample = function(expr, clusterMergings = NULL, clusterName = NULL,sampleIDs = NULL, matrixOnly = T){
+  colNames = colnames(expr)
   
   mergedExpr = data.frame(expr,cluster = clusterMergings,sample_id = sampleIDs)
   
@@ -137,7 +137,9 @@ extractClusterPerSample = function(expr, clusterMergings = NULL, clusterName = N
   cluster_list = lapply(frames_list,FUN = function(x){x[x[["cluster"]] %in% clusterName,]})
   
   if(matrixOnly == T){
-    cluster_list = lapply(cluster_list, FUN = function(x){x[,!colnames(x) %in% c("cluster","sample_id")]})
+    cluster_list = lapply(cluster_list, FUN = function(x){as.matrix(x[,!colnames(x) %in% c("cluster","sample_id")])})
+    cluster_list = lapply(cluster_list, FUN = function(x){colnames(x) = colNames})
+    
   }
   
   return(cluster_list)
@@ -238,9 +240,13 @@ interactiveScatterPlot = function(dataFrame, markerY, markerX,
   untransformed_df = dataFrame
   transformed_df = asinhTransform(dataFrame,cofactorVector = cofactorValues)
   # Take subset of values for performance
-  transformedSubset_df = transformed_df[sample(x = 1:nrow(transformed_df),size = sampleSize,replace = F),]
+  
+  sub_inds = sample(x = 1:nrow(transformed_df),size = sampleSize,replace = F)
+  
+  transformedSubset_df = transformed_df[sub_inds,]
+  untransformedSubset_df = untransformed_df[sub_inds,]
   # X and Y values
-  xValues = transformedSubset_df[,markerX]
+  xValues = untransformedSubset_df[,markerX]
   yValues = transformedSubset_df[,markerY]
   
   
