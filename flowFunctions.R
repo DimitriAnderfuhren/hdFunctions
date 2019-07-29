@@ -145,6 +145,14 @@ extractClusterPerSample = function(expr, clusterMergings = NULL, clusterName = N
   return(cluster_list)
 }
 
+#' needs flowCore package
+readFcsFiles = function(folderPath_string, pattern = "*.fcs$"){
+  allFcsNames = list.files(path = folderPath_string,full.names = T, pattern = pattern)
+  print(allFcsNames)
+  fcsFiles = flowCore::read.flowSet(files = allFcsNames)
+  return(fcsFiles)
+}
+
 checkColNames = function(expr, colsToCheck){
   colsThereBool = colsToCheck %in% colnames(expr)
   if(all(colsThereBool)){
@@ -401,7 +409,7 @@ removeSamplesByID = function(expr, sampleIDs, IDsToRemove){
   return(expr_out)
 }
 
-library(Rtsne.multicore)
+
 
 maketSNE = function(expr,tsne_inds, colsToUse = NULL, dims = 2, perplexity = 120, theta = 0.5, max_iter = 2000, verbose = T, pca = F, check_duplicates=F){
   if(is.null(colsToUse)){
@@ -416,8 +424,7 @@ maketSNE = function(expr,tsne_inds, colsToUse = NULL, dims = 2, perplexity = 120
   return(dr)
 }
 
-sub_inds = balancedSubInds(example$expr, example$sampleIDs, nTot = 1000)
-dr = maketSNE(expr = exampleExpr, tsne_inds = sub_inds)
+
 
 plotReducedDim = function(expr,dr,sampleIDs,tsne_inds,md){
   subExpr = data.frame(expr[tsne_inds,], sample_id = sampleIDs[tsne_inds])
