@@ -1,5 +1,13 @@
+# exampleData
+example = list()
+example$nVars = 12
+example$nObs = 100
+example$nSamples = 10
+example$expr = matrix(rnorm(example$nObs*example$nVars),ncol = example$nVars)
+example$MarkerNames = c("CD4", "TIGIT", "IFNg", "CD8", "HLADR", "IL10", "CD56","CD45RA", "IL17", "CCR7", "IL2", "TNFa")
+example$sampleIDs = rep(letters[1:example$nSamples], rep(example$nSamples,example$nObs/example$nSamples))
 
-
+# Constants
 markerNames = all_markers
 minCofactor = 0
 maxCofactor = 2000
@@ -384,6 +392,24 @@ removeSamplesByID = function(expr, sampleIDs, IDsToRemove){
   expr_out = expr[!(sampleIDs %in% IDsToRemove),]
   
   return(expr_out)
+}
+
+library(Rtsne.multicore)
+
+maketSNE = function(expr,tsne_inds, colsToUse = NULL, dims = 2, perplexity = 120, theta = 0.5, max_iter = 2000, verbose = T, pca = F, check_duplicates=F){
+  
+  tsne = Rtsne.multicore(expr[tsne_inds,colsToUse], dims = 2, perplexity = 120, theta = 0.5, 
+                         max_iter = 2000, verbose = T, pca = F, check_duplicates=F)
+  
+  dr = data.frame(tSNE1 = tsne_out$Y[, 1], tSNE2 = tsne_out$Y[, 2], cell_id = tsne_inds)
+                   
+  return(dr)
+}
+
+plotReducedDim = function(expr,dr,sampleIDs,tsne_inds,md){
+  subExpr = data.frame(expr[tsne_inds,], sample_id = sampleIDs[tsne_inds])
+  joinedExpr = merge.data.frame(subExpr,md, by = "sample_id")
+  meltedExpr = melt(joinedExpr)
 }
   
   
