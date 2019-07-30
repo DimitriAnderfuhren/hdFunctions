@@ -127,7 +127,7 @@ createFlowFrame = function(expr, colsToUse = NULL){
   }
 }
 
-extractClusterPerSample = function(expr, clusterMergings = NULL, clusterName = NULL,sampleIDs = NULL, matrixOnly = T, type = "fs"){
+extractClusterPerSample = function(expr, clusterMergings = NULL, clusterName = NULL,sampleIDs = NULL, matrixOnly = T){
   colNames = colnames(expr)
   
   mergedExpr = data.frame(expr,cluster = clusterMergings,sample_id = sampleIDs)
@@ -138,11 +138,6 @@ extractClusterPerSample = function(expr, clusterMergings = NULL, clusterName = N
   
   if(matrixOnly == T){
     cluster_list = lapply(cluster_list, FUN = function(x){as.matrix(x[,!colnames(x) %in% c("cluster","sample_id")])})
-    cluster_list = lapply(cluster_list, FUN = function(x){colnames(x) = colNames})
-    
-    if(type == "fs"){
-      cluster_list = flowCore::flowSet(lapply(cluster_list, createFlowFrame))
-    }
   }
   
   
