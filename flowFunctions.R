@@ -332,13 +332,13 @@ plotMarkerDensity = function(expr,sampleIDs = NULL, markerName = NULL){
   s = split.data.frame(expr,sampleIDs)
   ds = lapply(s,markerDensity, markerName = markerName)
   names = names(ds)
-  p = plot_ly(x = ds[[1]]$x,y = ds[[1]]$y, type = "scatter", mode = "line", name = names[i]) %>%
+  p = plot_ly(x = ds[[1]]$x,y = ds[[1]]$y, type = "scatter", mode = "line", name = names[1]) %>%
     layout(title = markerName)
   for(i in 2:length(ds)){
     p = add_trace(p,x = ds[[i]]$x, y = ds[[i]]$y, name = names[i])
   }
   
-  p
+  return(p)
   
 }
 
@@ -430,6 +430,22 @@ plotReducedDim = function(expr,dr,sampleIDs,tsne_inds,md){
   joinedExpr = merge.data.frame(subExpr,md, by = "sample_id")
   meltedExpr = melt(joinedExpr, variable.name = "antigen", value.name = "expression")
   
+}
+
+# Get cluster time
+getClusterTimeDev = function(expr,clusters, sampleIDs, groups, timepoints, patients){
+  samples_groups = split(data.frame(expr, clusterNr = clusters, sample_id = sampleIDs, group = groups, patient_id = patients), groups)
+  
+  sample_group_freqs = lapply(samples_groups, clusterDev)
+  
+  freqClusterDev = function(sample_group){
+    d = dplyr::count(sample_group, condition, clusterNr, sample_id, patient_id)
+    totN = dplyr::count(sample_group, condition,sample_id)
+    inj = dplyr::inner_join(totN, d, by = "sample_id")
+    d$freq = as.numeric(dplyr::pull(inj, n.y))/as.numeric(dplyr::pull(inj, n.x))
+    return(d$freq)
+  }
+  return(sample_group_freqs)
 }
   
   
