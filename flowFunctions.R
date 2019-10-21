@@ -6,7 +6,10 @@ example$nSamples = 10
 example$expr = matrix(rnorm(example$nObs*example$nVars),ncol = example$nVars)
 example$MarkerNames = c("CD4", "TIGIT", "IFNg", "CD8", "HLADR", "IL10", "CD56","CD45RA", "IL17", "CCR7", "IL2", "TNFa")
 example$sampleIDs = rep(letters[1:example$nSamples], rep(example$nObs/example$nSamples,example$nSamples))
+example$clustermergings = rep(letters[1:example$nSamples], rep(example$nObs/example$nSamples,example$nSamples))
 colnames(example$expr) = example$MarkerNames
+
+extractClusterPerSample(example$expr, clusterMergings = example$clustermergings, )
 
 # Constants
 minCofactor = 0
@@ -448,4 +451,58 @@ getClusterTimeDev = function(expr,clusters, sampleIDs, groups, timepoints, patie
   return(sample_group_freqs)
 }
   
+
+plot_clustering_heatmap_wrapper <- function(fcs, expr01, 
+                                            cell_clustering, color_clusters, cluster_merging = NULL) {
+  
+  # Calculate the median expression
+  expr_median <- data.frame(fcs, cell_clustering = cell_clustering) %>%
+    group_by(cell_clustering) %>%
+    summarize_each(funs(median))
+  expr01_median <- data.frame(expr01, cell_clustering = cell_clustering) %>%
+    group_by(cell_clustering) %>%
+    summarize_each(funs(median))
+  
+  # Calculate cluster frequencies
+  clustering_table <- as.numeric(table(cell_clustering))
+  
+  # This clustering is based on the markers that were used for the main clustering
+  d <- dist(expr_median[, colnames(fcs)], method = "euclidean")
+  cluster_rows <- hclust(d, method = "average")
+  
+  expr_heat <- as.matrix(expr01_median[, colnames(expr01)])
+  rownames(expr_heat) <- expr01_median$cell_clustering
+  
+  labels_row <- paste0(rownames(expr_heat), " (",
+                       round(clustering_table / sum(clustering_table) * 100, 2), "%)")
+  labels_col <- colnames(expr_heat)
+  
+  # Row annotation for the heatmap
+  annotation_row <- data.frame(cluster = factor(expr01_median$cell_clustering)) 
+  rownames(annotation_row) <- rownames(expr_heat)
+  
+  color_clusters <- color_clusters[1:nlevels(annotation_row$cluster)]
+  names(color_clusters) <- levels(annotation_row$cluster)
+  annotation_colors <- list(cluster = color_clusters)
+  annotation_legend <- FALSE
+  
+  if(!is.null(cluster_merging)){
+    cluster_merging$new_cluster <- factor(cluster_merging$new_cluster)
+    annotation_row$cluster_merging <- cluster_merging$new_cluster
+    color_clusters <- color_clusters[1:nlevels(cluster_merging$new_cluster)]
+    names(color_clusters) <- levels(cluster_merging$new_cluster)
+    annotation_colors$cluster_merging <- color_clusters
+    annotation_legend <- TRUE
+  }  
+  
+  # Colors for the heatmap
+  color <- colorRampPalette(rev(brewer.pal(n = 9, name = "RdYlBu")))(100)
+  pheatmap(expr_heat, color = color,
+           cluster_cols = FALSE, cluster_rows = cluster_rows,
+           labels_col = labels_col, labels_row = labels_row,
+           display_numbers = TRUE, number_color = "black",
+           fontsize = 8, fontsize_number = 0.001,
+           annotation_row = annotation_row, annotation_colors = annotation_colors,
+           annotation_legend = annotation_legend)
+}
   
