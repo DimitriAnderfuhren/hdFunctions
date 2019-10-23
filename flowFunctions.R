@@ -9,7 +9,6 @@ example$sampleIDs = rep(letters[1:example$nSamples], rep(example$nObs/example$nS
 example$clustermergings = rep(letters[1:example$nSamples], rep(example$nObs/example$nSamples,example$nSamples))
 colnames(example$expr) = example$MarkerNames
 
-extractClusterPerSample(example$expr, clusterMergings = example$clustermergings, )
 
 # Constants
 minCofactor = 0
