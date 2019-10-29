@@ -303,151 +303,29 @@ interactiveScatterPlot = function(dataFrame, markerY, markerX,
     plot(xValues,yValues,
          xlab = xLab,
          ylab = yLab,
-         col = plotColor,
+         col = plotColor
     )
+    upperB = quantile(xValues,probs = 0.99)
+    lowerB = quantile(xValues,probs = 0.01)
+    midB = (upperB + lowerB)/2
+    abline(v = upperB, lty = 2)
+    abline(v = lowerB, lty = 2)
+    abline(v = midB, lty = 2)
+    
+    
+    
   }else if(histogram_bool == T){
     par(mfrow = c(1,2))
     plot(xValues,yValues,
          xlab = xLab,
          ylab = yLab,
-         col = plotColor,
+         col = plotColor
     )
     hist(xValues,
          xlab = xLab,
          main = "",
          col = plotColor)
   }
-}
-
-
-markerDensity = function(expr, markerName = NULL){
-  
-  if(is.null(markerName)){
-    stop("must provide markername")
-  }
-  d = density(as.numeric(expr[,markerName]))
-  
-  return(d)
-}
-
-plotMarkerDensity = function(expr,sampleIDs = NULL, markerName = NULL){
-  s = split.data.frame(expr,sampleIDs)
-  ds = lapply(s,markerDensity, markerName = markerName)
-  names = names(ds)
-  p = plot_ly(x = ds[[1]]$x,y = ds[[1]]$y, type = "scatter", mode = "line", name = names[1]) %>%
-    layout(title = markerName)
-  for(i in 2:length(ds)){
-    p = add_trace(p,x = ds[[i]]$x, y = ds[[i]]$y, name = names[i])
-  }
-  
-  return(p)
-  
-}
-
-balancedSubsample = function(expr,sampleIDs, nTot = 1000){
-  
-  
-  sampleIDs = as.factor(sampleIDs)
-  
-  all_levels = levels(sampleIDs)
-  nLevels = length(all_levels)
-  nToSample = as.integer(nTot/nLevels)
-  
-  enoughCells = table(sampleIDs) > nToSample
-  
-  if(!all(enoughCells)){
-    print(names(table(sampleIDs)[!enoughCells]))
-    stop("Not enough cells")
-  }
-  
-  s = split.data.frame(expr,sampleIDs)
-  l = lapply(s,FUN = function(x){x[sample(1:nrow(x),size = nToSample),]})
-  
-  expr_out = do.call(rbind,l)
-  
-  return(expr_out)
-}
-
-balancedSubInds = function(expr,sampleIDs, nTot = 1000){
-  
-  all_inds = 1:nrow(expr)
-  
-  
-  sampleIDs = as.factor(sampleIDs)
-  
-  all_levels = levels(sampleIDs)
-  nLevels = length(all_levels)
-  nToSample = as.integer(nTot/nLevels)
-  
-  enoughCells = table(sampleIDs) > nToSample
-  
-  if(!all(enoughCells)){
-    print(names(table(sampleIDs)[!enoughCells]))
-    stop("Not enough cells")
-  }
-  
-  s = split(all_inds,sampleIDs)
-  l = lapply(s,FUN = function(x){x[sample(1:length(x),size = nToSample)]})
-  
-  inds_out = do.call(rbind,l)
-  
-  return(inds_out)
-}
-
-# finds all factor columns
-findFactorCols = function(df){
-  fC = names(Filter(is.factor,df))
-  return(fC)
-}
-
-removeSamplesByID = function(expr, sampleIDs, IDsToRemove){
-  if(!all(IDsToRemove %in% sampleIDs)){
-    print(IDsToRemove[!IDsToRemove %in% sampleIDs])
-    stop("Not all IDs to rmove found in the sample IDs")
-  }
-  expr_out = expr[!(sampleIDs %in% IDsToRemove),]
-  
-  return(expr_out)
-}
-
-
-
-maketSNE = function(expr,tsne_inds, colsToUse = NULL, dims = 2, perplexity = 120, theta = 0.5, max_iter = 2000, verbose = T, pca = F, check_duplicates=F){
-  if(is.null(colsToUse)){
-    colsToUse = 1:ncol(expr)
-  }
-  
-  tsne = Rtsne.multicore(expr[tsne_inds,colsToUse], dims = 2, perplexity = 120, theta = 0.5, 
-                         max_iter = 2000, verbose = T, pca = F, check_duplicates=F)
-  
-  dr = data.frame(tSNE1 = tsne_out$Y[, 1], tSNE2 = tsne_out$Y[, 2], cell_id = tsne_inds)
-                   
-  return(dr)
-}
-
-
-
-plotReducedDim = function(expr,dr,sampleIDs,tsne_inds,md){
-  subExpr = data.frame(expr[tsne_inds,], sample_id = sampleIDs[tsne_inds])
-  joinedExpr = merge.data.frame(subExpr,md, by = "sample_id")
-  meltedExpr = melt(joinedExpr, variable.name = "antigen", value.name = "expression")
-  
-}
-
-# Get cluster time
-getClusterTimeDev = function(expr,clusters, sampleIDs, groups, timepoints, patients){
-  samples_groups = split(data.frame(expr, clusterNr = clusters, sample_id = sampleIDs, group = groups, patient_id = patients), groups)
-  
-  sample_group_freqs = lapply(samples_groups, clusterDev)
-  
-  freqClusterDev = function(sample_group){
-    d = dplyr::count(sample_group, condition, clusterNr, sample_id, patient_id)
-    totN = dplyr::count(sample_group, condition,sample_id)
-    inj = dplyr::inner_join(totN, d, by = "sample_id")
-    d$freq = as.numeric(dplyr::pull(inj, n.y))/as.numeric(dplyr::pull(inj, n.x))
-    return(d$freq)
-  }
-  return(sample_group_freqs)
 }
   
 
