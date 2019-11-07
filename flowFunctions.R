@@ -408,4 +408,21 @@ plot_clustering_heatmap_wrapper <- function(fcs, expr01,
            annotation_row = annotation_row, annotation_colors = annotation_colors,
            annotation_legend = annotation_legend)
 }
-  
+
+library(dplyr)
+cluster_vector = sample(1:5, replace = T, size = 20)
+sample_ids = rep(paste0("sample", 1:5),c(4,4,4,4,4))
+condition = rep(c("treated","untreated"), c(3,2))
+md = data.frame(sample_id = levels(as.factor(sample_ids)),condition = condition )
+df = data.frame(sample_ids,cluster_vector)
+
+c = calcFrequencies(cluster_vector, sample_ids)
+
+
+calcFrequencies = function(cluster_vector, sample_ids){
+  freq = df %>%
+    group_by(sample_ids, cluster_vector) %>%
+    summarise(n = n()) %>%
+    mutate(freq = n / sum(n))
+  return(as.data.frame(freq))
+}
