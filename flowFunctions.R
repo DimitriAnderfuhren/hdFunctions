@@ -57,7 +57,33 @@ normC = function(expr, colsToUse = NULL){
   # normTsne for Tsne and UMAP -> vis flowSet
 subsampleV = function(expr, balance = "conditionOrSampleID"){
     return(subExpr)
-  } 
+} 
+
+balancedSubsample = function(expr,sampleIDs, nTot = 1000){
+  
+  
+  sampleIDs = as.factor(sampleIDs)
+  
+  all_levels = levels(sampleIDs)
+  nLevels = length(all_levels)
+  nToSample = as.integer(nTot/nLevels)
+  
+  enoughCells = table(sampleIDs) > nToSample
+  
+  if(!all(enoughCells)){
+    print(names(table(sampleIDs)[!enoughCells]))
+    stop("Not enough cells")
+  }
+  
+  s = split.data.frame(expr,sampleIDs)
+  l = lapply(s,FUN = function(x){x[sample(1:nrow(x),size = nToSample),]})
+  
+  expr_out = do.call(rbind,l)
+  
+  return(expr_out)
+}
+
+
   
 normV = function(expr, colsToUse = NULL){
     # Adjust data to start from (approximately) 0
