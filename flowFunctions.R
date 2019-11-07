@@ -414,10 +414,12 @@ cluster_vector = sample(1:5, replace = T, size = 20)
 sample_ids = rep(paste0("sample", 1:5),c(4,4,4,4,4))
 condition = rep(c("treated","untreated"), c(3,2))
 md = data.frame(sample_id = levels(as.factor(sample_ids)),condition = condition )
-df = data.frame(sample_ids,cluster_vector)
+df = data.frame(sample_ids,cluster_vector, condition)
 
 c = calcFrequencies(cluster_vector, sample_ids)
+c = inner_join(c,md, by = c("sample_ids", "sample_id"))
 
+ggplot(c, aes(x = condition, y = freq)) + geom_boxplot() + facet_wrap(~cluster_vector)
 
 calcFrequencies = function(cluster_vector, sample_ids){
   freq = df %>%
