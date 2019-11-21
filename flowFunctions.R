@@ -409,22 +409,51 @@ plot_clustering_heatmap_wrapper <- function(fcs, expr01,
            annotation_legend = annotation_legend)
 }
 
-library(dplyr)
-cluster_vector = sample(1:5, replace = T, size = 20)
-sample_ids = rep(paste0("sample", 1:5),c(4,4,4,4,4))
-condition = rep(c("treated","untreated"), c(3,2))
-md = data.frame(sample_id = levels(as.factor(sample_ids)),condition = condition )
-df = data.frame(sample_ids,cluster_vector, condition)
 
-c = calcFrequencies(cluster_vector, sample_ids)
-c = inner_join(c,md, by = c("sample_ids", "sample_id"))
 
-ggplot(c, aes(x = condition, y = freq)) + geom_boxplot() + facet_wrap(~cluster_vector)
 
 calcFrequencies = function(cluster_vector, sample_ids){
+  df = data.frame(sample_id = sample_ids, cluster_vector = cluster_vector)
   freq = df %>%
-    group_by(sample_ids, cluster_vector) %>%
+    group_by(sample_id, cluster_vector) %>%
     summarise(n = n()) %>%
     mutate(freq = n / sum(n))
   return(as.data.frame(freq))
 }
+
+
+
+
+markerExpressionPlot = function(data, sample_ids,md, markerName = "all"){
+  ggdf <- data.frame(sample_id = sample_ids, data)
+  ggdf <- melt(ggdf, id.var = "sample_id",
+               value.name = "expression", variable.name = "antigen")
+  
+  if(!is.null(md)){
+    mm <- match(ggdf$sample_id, md$sample_id)
+    ggdf$condition <- md$condition[mm]
+  }
+  
+  if(markerName != "all" & markerName %in% ggdf$antigen){
+    ggdf = ggdf[ggdf$antigen == markerName,]
+  }
+  
+  plot1 <- ggplot(ggdf, aes(x = expression, color = condition, group = sample_id)) +
+    geom_density() +
+    facet_wrap(~ antigen, nrow = 4, scales = "free") + theme_bw2() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1),
+          strip.text = element_text(size = 7), axis.text = element_text(size = 5)) +
+    guides(color = guide_legend(ncol = 1)) 
+  plot1
+}
+
+
+
+
+k12_nice_colors = c("#363237", "#2D4262", "#73605B", "#D09683","#748891", "#E6DE87","#79C777","#A6CBED","#B698D4","#944E4E","#824874","#DBB81D")
+basic_pair_colors = c("#748891","#D09683")
+dark_pair_colors = c("#2D4262","#944E4E")
+bny_pair_colors = c("#363237","#DBB81D")
+intense_pair_colors = c("#2D4262","#DBB81D")
+lion_pair_colors = c("#871010", "#E6B800")
+zh_colors = c("#f9fcff","#445C77","#EDBB24","#7db884")
