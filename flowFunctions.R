@@ -448,6 +448,85 @@ markerExpressionPlot = function(data, sample_ids,md, markerName = "all"){
 }
 
 
+######
+# Functions
+
+calcMFIs = function(data, f, markerNames){
+  s = split(data,f = f)
+  mfis = lapply(s, function(x){apply(x[,markerNames],2,mean)})
+  return(mfis)
+}
+
+pick <- function(condition){
+  function(d) d %>% filter_(condition)
+}
+
+ggSlingPlot = function(slingshot_output,groups= NULL, expr = NULL,addCurves = T, facets = NULL){
+  d = ggSlingDf(slingshot_output, groups,expr)
+  curves = orderedCurves(slingshot_output)
+  plot = ggplot(d, aes(x = X,y = Y, color = as.factor(cluster_vector)))+
+    geom_point()+
+    scale_color_manual(values = k12_nice_colors)
+  if(addCurves == T){
+    for(i in 1:length(curves)){
+      plot = plot +
+        geom_path(data = curves[[i]],aes(x = X, y = Y), inherit.aes = F, linetype = "dashed")
+    }
+  }
+  if(!is.null(facets)){
+    plot = plot + facet_wrap(as.formula(facets))
+  }
+  
+  return(plot)
+  
+}
+
+#' ggSlingDf
+#' easily construct a dataframe (from slingshot output and additional information) that is suitable for plotting with ggplot
+#' Make sure that the indices of groups and expr are the same as in the slingshot output
+#' 
+ggSlingDf = function(slingshot_output,groups= NULL, expr = NULL){
+  cluster_vector = getClusterVector(slingshot_output)
+  ggdf1 = data.frame(reducedDim(slingshot_output),cluster_vector)
+  
+  if(!is.null(groups)){
+    ggdf1 = data.frame(ggdf1,groups)
+  }
+  if(!is.null(expr)){
+    ggdf1 = data.frame(ggdf1,expr)
+  }
+  
+  return(ggdf1)
+}
+
+isDefined = function(object){
+  if(!is.null(object)){
+    return(object)
+  }
+}
+
+orderedCurves = function(slingshot_output){
+  curves = slingshot::slingCurves(slingshot_output)
+  ordered_curves = lapply(curves,function(c){as.data.frame(c$s[c$ord,])})
+  return(ordered_curves)
+}
+
+getClusterVector = function(slingshot_output){
+  cl = apply(clusterLabels(slingshot_output),1,function(x){as.numeric(colnames(clusterLabels(slingshot_output))[x == 1][1])})
+  return(cl)
+}
+plotSlingshot = function(slingshot_output, line_type = "lineages"){
+  cl = getClusterVector(slingshot_output)
+  plot(reducedDims(slingshot_output), col = color_clusters[cl], pch=16, asp = 1)
+  lines(SlingshotDataSet(slingshot_output),type = line_type,lwd=2, col = 'black' )
+}
+quick_coords = function(vortex_data, doPlot = T){
+  coord_data = data.frame(X = vortex_data[["X"]], Y = vortex_data[["Y"]] )
+  plot(coord_data)
+  return(coord_data)
+}
+
+
 
 
 k12_nice_colors = c("#363237", "#2D4262", "#73605B", "#D09683","#748891", "#E6DE87","#79C777","#A6CBED","#B698D4","#944E4E","#824874","#DBB81D")
