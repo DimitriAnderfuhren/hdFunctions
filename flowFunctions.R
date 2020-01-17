@@ -83,8 +83,15 @@ balancedSubsample = function(expr,sampleIDs, nTot = 1000){
   return(expr_out)
 }
 
+normV_vector = function(x, lower = 0.01, upper = 0.99){
+  q = quantile(x, lower, names = F)
+  x = x-q
+  p = quantile(x, upper, names = F)
+  x = x/p
+  return(x)
+}
 
-  
+expr = matrix(c(1:12), nrow = 4, ncol = 3)
 normV = function(expr, colsToUse = NULL){
     # Adjust data to start from (approximately) 0
     if(is.null(colsToUse)){
@@ -419,6 +426,43 @@ calcFrequencies = function(cluster_vector, sample_ids){
     summarise(n = n()) %>%
     mutate(freq = n / sum(n))
   return(as.data.frame(freq))
+}
+calcFrequencies2 = function(sample_ids, cluster_vector){
+  df = data.frame(sample_id = sample_ids, cluster_vector = cluster_vector)
+  cluster_names = levels(as.factor(cluster_vector))
+  s = split(df, df$sample_id)
+  l = lapply(s,FUN = function(x){table(x["cluster_vector"])/nrow(x)})
+  l1 = lapply(l, FUN = function(x){add_names = cluster_names[!cluster_names %in% names(x)]
+  v = rep(0, length(add_names))
+  names(v) = add_names
+  return(c(x,v))
+  })
+  m = do.call(rbind, lapply(l1, function(x) x[match(cluster_names, names(x))]))
+  return(m)
+}
+
+#' uses calcFrequencies2
+presenceOfClusters = function(sample_ids, cluster_vector, counts_threshhold = 10){
+  m = calcFrequencies2(sample_ids, cluster_vector)
+  meanFreqs_percent = colSums(m)/nrow(m)*100
+  
+  df = data.frame(sample_id = sample_ids, cluster_vector = cluster_vector)
+  cluster_names = levels(as.factor(cluster_vector))
+  s = split(df, df$sample_id)
+  
+  l = lapply(s,FUN = function(x){table(x["cluster_vector"])})
+  l1 = lapply(l, FUN = function(x){add_names = cluster_names[!cluster_names %in% names(x)]
+  v = rep(0, length(add_names))
+  names(v) = add_names
+  return(c(x,v))
+  })
+  raw_counts = do.call(rbind, lapply(l1, function(x) x[match(cluster_names, names(x))]))
+  above_counts = ifelse(raw_counts >= counts_threshhold, 1, 0)
+  above_counts_percentage = colSums(above_counts)/nrow(above_counts)*100
+  
+  presence_df = data.frame(cluster_name = cluster_names, mean_frequency_percent = meanFreqs_percent, presence_percentage = above_counts_percentage)
+  
+  return(presence_df)
 }
 
 
