@@ -465,6 +465,23 @@ presenceOfClusters = function(sample_ids, cluster_vector, counts_threshhold = 10
   return(presence_df)
 }
 
+#' Threshold is in percentage
+#' uses calcFrequencies2
+#' uses presenceOfClusters
+removeNonUbiquitous = function(expr, sample_ids, cluster_vector, percentage_thr = 10, counts_thr = 50){
+  m = calcFrequencies2(sample_ids, cluster_vector)
+  presence_df = presenceOfClusters(sample_ids = sample_ids, cluster_vector = cluster_vector, counts_threshhold = counts_thr)
+  clustersToClear = presence_df[which(presence_df$presence_percentage < thr),]$cluster_name
+  indicesToRemove = which(cluster_vector %in% clustersToClear)
+  
+  norm_v_cleaned = expr[-indicesToRemove,]
+  sample_ids_cleaned = sample_ids[-indicesToRemove]
+  cluster_vector_cleaned = cluster_vector[-indicesToRemove]
+  
+  
+  return(list(expr = norm_v_cleaned,sample_ids = sample_ids_cleaned, cluster = cluster_vector_cleaned))
+  
+}
 
 
 
