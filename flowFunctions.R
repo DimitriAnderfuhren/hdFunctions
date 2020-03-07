@@ -1,13 +1,13 @@
 # exampleData
-example = list()
-example$nVars = 12
-example$nObs = 10000
-example$nSamples = 10
-example$expr = matrix(rnorm(example$nObs*example$nVars),ncol = example$nVars)
-example$MarkerNames = c("CD4", "TIGIT", "IFNg", "CD8", "HLADR", "IL10", "CD56","CD45RA", "IL17", "CCR7", "IL2", "TNFa")
-example$sampleIDs = rep(letters[1:example$nSamples], rep(example$nObs/example$nSamples,example$nSamples))
-example$clustermergings = rep(letters[1:example$nSamples], rep(example$nObs/example$nSamples,example$nSamples))
-colnames(example$expr) = example$MarkerNames
+# example = list()
+# example$nVars = 12
+# example$nObs = 10000
+# example$nSamples = 10
+# example$expr = matrix(rnorm(example$nObs*example$nVars),ncol = example$nVars)
+# example$MarkerNames = c("CD4", "TIGIT", "IFNg", "CD8", "HLADR", "IL10", "CD56","CD45RA", "IL17", "CCR7", "IL2", "TNFa")
+# example$sampleIDs = rep(letters[1:example$nSamples], rep(example$nObs/example$nSamples,example$nSamples))
+# example$clustermergings = rep(letters[1:example$nSamples], rep(example$nObs/example$nSamples,example$nSamples))
+# colnames(example$expr) = example$MarkerNames
 
 
 # Constants
@@ -91,7 +91,7 @@ normV_vector = function(x, lower = 0.01, upper = 0.99){
   return(x)
 }
 
-expr = matrix(c(1:12), nrow = 4, ncol = 3)
+
 normV = function(expr, colsToUse = NULL){
     # Adjust data to start from (approximately) 0
     if(is.null(colsToUse)){
